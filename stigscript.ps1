@@ -27,6 +27,48 @@ Import-Module "$PSScriptRoot\Modules\Process-STIGRules.psm1" -Force
 Import-Module "$PSScriptRoot\Modules\Prepare-MachineList.psm1" -Force
 Import-Module "$PSScriptRoot\Modules\Process-STIGFiles.psm1" -Force
 
+# Define the current version
+$CurrentVersion = "1.0.1
+
+# Function to check for the latest version on GitHub
+Function Check-LatestVersion {
+    param (
+        [string]$RepoURL
+    )
+
+    try {
+        $releaseInfo = Invoke-RestMethod -Uri "$RepoURL/releases/latest"
+        return $releaseInfo.tag_name
+    } catch {
+        Write-Log -Message "Error checking latest version: $_" -IsError
+        return $null
+    }
+}
+
+# Check for the latest version
+$RepoURL = "https://api.github.com/repos/yourusername/STIG_FIX"
+$LatestVersion = Check-LatestVersion -RepoURL $RepoURL
+
+if ($LatestVersion -and ($CurrentVersion -ne $LatestVersion)) {
+    $updateMessage = "A new version ($LatestVersion) is available. Do you want to update now?"
+    $updatePrompt = [System.Windows.MessageBox]::Show($updateMessage, "Update Available", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+    
+    if ($updatePrompt -eq [System.Windows.MessageBoxResult]::Yes) {
+        # Run the update script
+        $updateScriptPath = "$PSScriptRoot\Modules\UpdateSTIGS.ps1"
+        if (Test-Path $updateScriptPath) {
+            try {
+                & $updateScriptPath
+                [System.Windows.MessageBox]::Show("Application updated successfully. Please restart the application.", "Update Complete", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+                exit
+            } catch {
+                [System.Windows.MessageBox]::Show("Error updating the application: $_", "Update Error", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+            }
+        } else {
+            [System.Windows.MessageBox]::Show("Update script not found.", "Update Error", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+        }
+    }
+}
 
 #Define Variables
 #$logFilePath = "$PSScriptRoot\Logs"
@@ -122,6 +164,9 @@ try {
 
 # Apply initial theme
 Apply-Theme -Theme "Light"
+
+# Set the version number in the GUI
+$window.FindName("VersionTextBlock").Text = "Version $CurrentVersion"
 
 # Theme Toggle Button Event Handler
 $window.FindName("ThemeToggleButton").Add_Click({

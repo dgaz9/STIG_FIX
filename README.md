@@ -45,3 +45,5 @@ Orchestrates the processing of selected STIG files.
 ### UpdateSTIGS
 Updates the STIG files from the specified GitHub repository.
 
+![Capture2](https://github.com/user-attachments/assets/dcad1de4-b7c7-4fc6-ba58-ea7f802a30ea)
+![Capture](https://github.com/user-attachments/assets/ac16c3b2-b591-41f5-8ba1-c78186ac7ec2)
